@@ -21,7 +21,7 @@
           class="edition edition-custom"
           @click="isCustom = true"
           :style="{
-            backgroundImage: `url(${require('../../assets/editions/custom.png')})`
+            backgroundImage: `url(${require('@/assets/editions/custom.png')})`
           }"
         >
           Custom Script / Characters
