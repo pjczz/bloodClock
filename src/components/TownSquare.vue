@@ -5,7 +5,7 @@
     :class="{
       public: grimoire.isPublic,
       spectator: session.isSpectator,
-      vote: session.nomination
+      vote: session.nomination,
     }"
   >
     <ul class="circle" :class="['size-' + players.length]">
@@ -18,7 +18,7 @@
           from: Math.max(swap, move, nominate) === index,
           swap: swap > -1,
           move: move > -1,
-          nominate: nominate > -1
+          nominate: nominate > -1,
         }"
       ></Player>
     </ul>
@@ -98,12 +98,12 @@ export default {
     Player,
     Token,
     RoleModal,
-    ReminderModal
+    ReminderModal,
   },
   computed: {
     ...mapGetters({ nightOrder: "players/nightOrder" }),
     ...mapState(["grimoire", "roles", "session"]),
-    ...mapState("players", ["players", "bluffs", "fabled"])
+    ...mapState("players", ["players", "bluffs", "fabled"]),
   },
   data() {
     return {
@@ -113,7 +113,7 @@ export default {
       move: -1,
       nominate: -1,
       isBluffsOpen: true,
-      isFabledOpen: true
+      isFabledOpen: true,
     };
   },
   methods: {
@@ -155,7 +155,7 @@ export default {
       if (this.session.isSpectator || this.session.lockedVote) return;
       if (
         confirm(
-          `Do you really want to remove ${this.players[playerIndex].name}?`
+          `Do you really want to remove ${this.players[playerIndex].name}?`,
         )
       ) {
         const { nomination } = this.session;
@@ -170,7 +170,7 @@ export default {
             // update nomination array if removed player has lower index
             this.$store.commit("session/setNomination", [
               nomination[0] > playerIndex ? nomination[0] - 1 : nomination[0],
-              nomination[1] > playerIndex ? nomination[1] - 1 : nomination[1]
+              nomination[1] > playerIndex ? nomination[1] - 1 : nomination[1],
             ]);
           }
         }
@@ -186,7 +186,7 @@ export default {
         if (this.session.nomination) {
           // update nomination if one of the involved players is swapped
           const swapTo = this.players.indexOf(to);
-          const updatedNomination = this.session.nomination.map(nom => {
+          const updatedNomination = this.session.nomination.map((nom) => {
             if (nom === this.swap) return swapTo;
             if (nom === swapTo) return this.swap;
             return nom;
@@ -200,7 +200,7 @@ export default {
         }
         this.$store.commit("players/swap", [
           this.swap,
-          this.players.indexOf(to)
+          this.players.indexOf(to),
         ]);
         this.cancel();
       }
@@ -214,7 +214,7 @@ export default {
         if (this.session.nomination) {
           // update nomination if it is affected by the move
           const moveTo = this.players.indexOf(to);
-          const updatedNomination = this.session.nomination.map(nom => {
+          const updatedNomination = this.session.nomination.map((nom) => {
             if (nom === this.move) return moveTo;
             if (nom > this.move && nom <= moveTo) return nom - 1;
             if (nom < this.move && nom >= moveTo) return nom + 1;
@@ -229,7 +229,7 @@ export default {
         }
         this.$store.commit("players/move", [
           this.move,
-          this.players.indexOf(to)
+          this.players.indexOf(to),
         ]);
         this.cancel();
       }
@@ -251,8 +251,8 @@ export default {
       this.move = -1;
       this.swap = -1;
       this.nominate = -1;
-    }
-  }
+    },
+  },
 };
 </script>
 

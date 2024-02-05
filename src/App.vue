@@ -9,7 +9,7 @@ export default {};
 <script lang="scss">
 #app {
   height: 100%;
-  width:100vw;
+  width: 100vw;
   background-position: center center;
   background-size: cover;
   display: flex;

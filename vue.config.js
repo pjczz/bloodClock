@@ -7,4 +7,15 @@ module.exports = {
   chainWebpack: (config) => {
     config.resolve.alias.set("@", resolve("src"));
   },
+  devServer: {
+    proxy: {
+      "/api": {
+        target: process.env.VUE_APP_PROXY_TARGET,
+        changeOrigin: true,
+        pathRewrite: {
+          "^/api": "",
+        },
+      },
+    },
+  },
 };

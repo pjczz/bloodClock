@@ -61,7 +61,7 @@ const faIcons = [
 const fabIcons = ["Github", "Discord"];
 library.add(
   ...faIcons.map((i) => fas["fa" + i]),
-  ...fabIcons.map((i) => fab["fa" + i])
+  ...fabIcons.map((i) => fab["fa" + i]),
 );
 Vue.component("font-awesome-icon", FontAwesomeIcon);
 Vue.config.productionTip = false;
