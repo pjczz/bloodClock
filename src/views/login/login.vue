@@ -71,7 +71,7 @@ export default {
       await login(loginParam)
         .then((res) => {
           if (res && res.token) {
-            setToken(res.token);
+            setToken(res);
           }
         })
         .catch((err) => {
