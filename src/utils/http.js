@@ -36,9 +36,9 @@ http.interceptors.response.use(
   (response) => {
     try {
       const { data: rawData } = response;
-      const { status, data, message } = rawData;
-      if (status === 200) return data;
-      errDealer(status, message);
+      const { code, data, message } = rawData;
+      if (code === 200) return data;
+      errDealer(code, message);
       return Promise.reject(response);
     } catch (e) {
       console.error("Request error: ", e);

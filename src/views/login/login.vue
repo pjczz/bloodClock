@@ -67,11 +67,13 @@ export default {
 
       //设置在登录状态
       this.isLoging = true;
-      console.log(loginParam);
       await login(loginParam)
         .then((res) => {
-          if (res && res.token) {
+          console.log(res,'res');
+          if (res) {
             setToken(res);
+            this.$message.success("登录成功");
+            this.$router.push({ path: "/game" });
           }
         })
         .catch((err) => {
