@@ -63,6 +63,7 @@ export default {
       let loginParam = {
         username: this.username,
         password: this.password,
+        role:2,
       };
 
       //设置在登录状态
