@@ -38,7 +38,7 @@ http.interceptors.response.use(
       const { data: rawData } = response;
       const { code, data, message } = rawData;
       if (code === 200) return data;
-      errDealer(code, message);
+      errDealer(message, code);
       return Promise.reject(response);
     } catch (e) {
       console.error("Request error: ", e);
@@ -46,9 +46,9 @@ http.interceptors.response.use(
     }
   },
   (error) => {
-    console.log(error);
+    console.log(error.response.data.code, error.response.data.message);
     // 对响应错误做些什么
-    errDealer(error.status, error.message);
+    errDealer(error.response.data.code, error.response.data.message);
     return Promise.reject(error);
   },
 );

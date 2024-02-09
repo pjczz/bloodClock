@@ -9,8 +9,9 @@
       <div class="log-cloud cloud3"></div>
       <div class="log-cloud cloud4"></div>
 
-      <div class="log-logo">欢迎━(*｀∀´*)ノ亻!!</div>
+      <div class="log-logo">欢迎登陆(*｀∀´*)</div>
       <div class="log-text">@宵宫单推人</div>
+      <div class="log-text" @click="goRegister">还没注册？去注册</div>
     </div>
     <div class="log-email">
       <input
@@ -24,7 +25,7 @@
         :class="'log-input' + (password == '' ? ' log-input-empty' : '')"
         v-model="password"
       />
-      <a href="javascript:;" class="log-btn" @click="login">Login</a>
+      <a href="javascript:;" class="log-btn" @click="login">登陆</a>
     </div>
     <Loading v-if="isLoging" marginTop="-30%"></Loading>
   </div>
@@ -53,6 +54,9 @@ export default {
         this.toLogin();
       }
     },
+    goRegister(){
+      this.$router.push({path:'/register'})
+    },
 
     //登录请求
     async toLogin() {
@@ -63,7 +67,6 @@ export default {
       let loginParam = {
         username: this.username,
         password: this.password,
-        role:2,
       };
 
       //设置在登录状态

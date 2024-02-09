@@ -6,3 +6,17 @@ export function login(data) {
     data,
   });
 }
+export function register(data) {
+  return httpRequest({
+    url: "/api/user/register",
+    method: "post",
+    data,
+  });
+}
+export function currentUser(data) {
+  return httpRequest({
+    url: "/api/currentUser",
+    method: "post",
+    data,
+  });
+}
