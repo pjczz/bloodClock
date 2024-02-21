@@ -54,8 +54,8 @@ export default {
         this.toLogin();
       }
     },
-    goRegister(){
-      this.$router.push({path:'/register'})
+    goRegister() {
+      this.$router.push({ path: "/register" });
     },
 
     //登录请求
@@ -73,7 +73,7 @@ export default {
       this.isLoging = true;
       await login(loginParam)
         .then((res) => {
-          console.log(res,'res');
+          console.log(res, "res");
           if (res) {
             setToken(res);
             this.$message.success("登录成功");
