@@ -21,9 +21,9 @@
         >
           <div
             class="player"
-            :class="{ active: activeId === player.id }"
+            :class="{ active: chatName === player.name }"
             v-for="player in playerList"
-            :key="player.id"
+            :key="player.vid"
             @click="handleChoosePlayer(player)"
           >
             <!-- 玩家信息 -->
@@ -45,6 +45,12 @@
           <div class="chat-history"></div>
           <!-- 输入框 -->
           <div class="chat-input">
+            <a-textarea
+              class="input-box"
+              placeholder=""
+              :rows="8"
+              @keyup="handleStopPropagation"
+            />
             <div class="chat-btn">
               <!-- 取消按钮 -->
               <a-button style="margin-right: 5px" @click="chatShowHandler"
@@ -74,31 +80,32 @@ export default {
   data() {
     return {
       // 初始化不显示聊天界面
-      isChatting: true,
+      isChatting: false,
       // hover标识
       isHovered: false,
       // 初始化滚动定位
       scrollPosition: 0,
-      // 玩家列表
-      playerList: [
-        { id: "001", name: "Jason", uid: "wlrhog" },
-        { id: "002", name: "Alex", uid: "giug" },
-        { id: "003", name: "ilin", uid: "wlrhz3og" },
-        { id: "004", name: "ilin", uid: "wlrhz3og" },
-        { id: "005", name: "ilin", uid: "wlrhz3og" },
-        { id: "006", name: "ilin", uid: "wlrhz3og" },
-        { id: "007", name: "ilin", uid: "wlrhz3og" },
-        { id: "008", name: "ilin", uid: "wlrhz3og" },
-        { id: "009", name: "ilin", uid: "wlrhz3og" },
-        { id: "010", name: "ilin", uid: "wlrhz3og" },
-        { id: "011", name: "ilin", uid: "wlrhz3og" },
-        { id: "012", name: "ilin", uid: "wlrhz3og" },
-      ],
-      // 跟谁聊天
+      // 选中的聊天对象名
       chatName: "",
-      // 选中的id
-      activeId: "",
     };
+  },
+  computed: {
+    // 玩家列表
+    playerList() {
+      // 取出玩家信息
+      const { players } = this.$store.state.players;
+      // 过滤字段 添加自定义字段
+      const playerList = players.map((item, index) => {
+        return { id: item.id, name: item.name, vid: index, chatId: item.id };
+      });
+      playerList.push({
+        id: "host",
+        name: "Hoster",
+        vid: "host",
+        chatId: "host",
+      });
+      return playerList;
+    },
   },
   methods: {
     // 控制聊天界面展示与否的回调
@@ -135,7 +142,10 @@ export default {
     // 处理选择聊天对象
     handleChoosePlayer(player) {
       this.chatName = player.name;
-      this.activeId = player.id;
+    },
+    // input时阻止冒泡
+    handleStopPropagation() {
+      event.stopPropagation();
     },
   },
 };
@@ -181,7 +191,7 @@ export default {
         border-bottom: 1px solid #e8e8e8;
       }
       .active {
-        background-color: #f3f3f3;
+        background-color: #e3e3e3;
       }
     }
     .chat {
@@ -197,6 +207,16 @@ export default {
         height: 150px;
         background-color: #f3f3f3;
         border-top: 1px solid #e8e8e8;
+        .input-box {
+          // 消除input的默认样式
+          background: none;
+          outline: none;
+          border: none;
+          &:focus {
+            // ant-input focus的蓝框效果是用box-shadow实现的
+            box-shadow: none;
+          }
+        }
         .chat-btn {
           position: absolute;
           bottom: 10px;

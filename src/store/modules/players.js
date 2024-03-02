@@ -20,7 +20,7 @@ const getters = {
   },
   nonTravelers({ players }) {
     const nonTravelers = players.filter(
-      (player) => player.role.team !== "traveler",
+      (player) => player.role.team !== "traveler"
     );
     return Math.min(nonTravelers.length, 15);
   },
