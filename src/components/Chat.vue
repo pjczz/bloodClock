@@ -13,16 +13,14 @@
         <!-- 玩家列表 -->
         <div
           class="playerList"
-          ref="playerList"
           :style="{ top: scrollPosition + 'px' }"
           @mouseover="setHover(true)"
           @mouseout="setHover(false)"
-          @wheel.prevent="handleScroll"
         >
           <div
             class="player"
             :class="{ active: chatName === player.name }"
-            v-for="player in playerList"
+            v-for="player in chatPlayerList"
             :key="player.vid"
             @click="handleChoosePlayer(player)"
           >
@@ -50,6 +48,7 @@
               placeholder=""
               :rows="8"
               @keyup="handleStopPropagation"
+              v-model="textarea"
             />
             <div class="chat-btn">
               <!-- 取消按钮 -->
@@ -57,7 +56,7 @@
                 >取消</a-button
               >
               <!-- 发送按钮 -->
-              <a-button icon="check">发送</a-button>
+              <a-button icon="check" @click.stop="sendMessage">发送</a-button>
             </div>
           </div>
         </div>
@@ -87,24 +86,38 @@ export default {
       scrollPosition: 0,
       // 选中的聊天对象名
       chatName: "",
+      // textarea
+      textarea: "",
     };
   },
   computed: {
-    // 玩家列表
-    playerList() {
+    // 聊天的玩家列表
+    chatPlayerList() {
+      // 玩家标志
+      const isSpectator = this.$store.state.session.isSpectator;
       // 取出玩家信息
       const { players } = this.$store.state.players;
-      // 过滤字段 添加自定义字段
-      const playerList = players.map((item, index) => {
-        return { id: item.id, name: item.name, vid: index, chatId: item.id };
-      });
-      playerList.push({
-        id: "host",
-        name: "Hoster",
-        vid: "host",
-        chatId: "host",
-      });
-      return playerList;
+      // chatPlayerList
+      let chatPlayerList = [];
+
+      // 若为玩家
+      if (isSpectator) {
+        // StoryTeller的chatId
+        const stChatId = "host" + this.$store.state.session.sessionId;
+        chatPlayerList.push({
+          id: "host" + this.$store.state.session.sessionId,
+          name: "StoryTeller",
+          vid: "storyteller",
+          chatId: stChatId,
+        });
+      } else {
+        // 若为StoryTeller
+        // 过滤字段 添加自定义字段
+        chatPlayerList = players.map((item, index) => {
+          return { id: item.id, name: item.name, vid: index, chatId: item.id };
+        });
+      }
+      return chatPlayerList;
     },
   },
   methods: {
@@ -116,29 +129,6 @@ export default {
     setHover(value) {
       this.isHovered = value;
     },
-    // 处理滚动
-    handleScroll(event) {
-      const deltaY = event.deltaY;
-      const playerListItemHeight = 80;
-      const enableDeltaY =
-        playerListItemHeight * this.playerList.length -
-        this.$refs.playerList.clientHeight;
-
-      if (this.isHovered) {
-        this.scrollPosition -= deltaY;
-        // 顶端修正
-        if (this.scrollPosition > 0) {
-          this.scrollPosition = 0;
-        }
-        // 底部修正
-        if (-this.scrollPosition > enableDeltaY) {
-          this.scrollPosition = -enableDeltaY;
-        }
-      }
-
-      // 阻值默认滚动
-      event.preventDefault();
-    },
     // 处理选择聊天对象
     handleChoosePlayer(player) {
       this.chatName = player.name;
@@ -147,11 +137,32 @@ export default {
     handleStopPropagation() {
       event.stopPropagation();
     },
+    // 发送
+    sendMessage() {
+      console.log("sendMessage");
+    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
+// 滚动条样式修改
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 0;
+}
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  cursor: pointer;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.15);
+  transition: color 0.2s ease;
+}
+// 组件样式
 .chat-wrapper {
   position: absolute;
   bottom: 50px;
@@ -183,7 +194,8 @@ export default {
       height: 500px;
       background-color: #f3f3f3;
       position: absolute;
-      transition: top 0.3s ease;
+      overflow-x: hidden;
+      overflow-y: scroll;
       .player {
         width: 200px;
         height: 80px;
