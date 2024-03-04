@@ -16,7 +16,7 @@ export function register(data) {
 export function currentUser(data) {
   return httpRequest({
     url: "/currentUser",
-    method: "post",
+    method: "get",
     data,
   });
 }
