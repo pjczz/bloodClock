@@ -41,7 +41,7 @@ export function clearToken() {
   localStorage.removeItem("token");
 }
 export function getUserInfo() {
-  const userInfo = localStorage.getItem("userInfo")
+  const userInfo = localStorage.getItem("userInfo");
   return userInfo || userInfo != "" ? JSON.parse(userInfo) : null;
 }
 export function setUserInfo(userInfo) {

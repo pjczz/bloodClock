@@ -20,3 +20,9 @@ export function currentUser(data) {
     data,
   });
 }
+export function logout() {
+  return httpRequest({
+    url: "/logout",
+    method: "post",
+  });
+}

@@ -21,10 +21,9 @@ function formatContentType(type) {
 // 请求拦截器
 http.interceptors.request.use(
   (config) => {
-
     config.headers["Content-Type"] = formatContentType(config.contentType);
     const token = getToken();
-    console.log(token, '获取token');
+    console.log(token, "获取token");
     if (token) config.headers.Authorization = `Bearer ${token}`;
     console.log(config);
     return config;
