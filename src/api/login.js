@@ -1,22 +1,28 @@
 import httpRequest from "@/utils/http";
 export function login(data) {
   return httpRequest({
-    url: "/api/user/login",
+    url: "/user/login",
     method: "post",
     data,
   });
 }
 export function register(data) {
   return httpRequest({
-    url: "/api/user/register",
+    url: "/user/register",
     method: "post",
     data,
   });
 }
 export function currentUser(data) {
   return httpRequest({
-    url: "/api/currentUser",
-    method: "post",
+    url: "/currentUser",
+    method: "get",
     data,
+  });
+}
+export function logout() {
+  return httpRequest({
+    url: "/logout",
+    method: "post",
   });
 }

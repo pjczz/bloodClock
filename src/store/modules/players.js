@@ -6,6 +6,7 @@ const NEWPLAYER = {
   isVoteless: false,
   isDead: false,
   pronouns: "",
+  chatId: "",
 };
 
 const state = () => ({
@@ -153,6 +154,10 @@ const mutations = {
         state.fabled = fabled;
       }
     }
+  },
+  // 用于处理chatId的mutation
+  setChatId(state, { playerIndex, chatId }) {
+    state.players[playerIndex].chatId = chatId;
   },
 };
 

@@ -1,5 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
+import { setupPermissionGuard } from "./beforeEach";
 
 Vue.use(VueRouter);
 
@@ -25,5 +26,6 @@ const routes = [
 const router = new VueRouter({
   routes,
 });
+setupPermissionGuard(router);
 
 export default router;

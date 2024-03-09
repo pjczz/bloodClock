@@ -32,8 +32,21 @@ export function errDealer(status, errMessage) {
 }
 
 export function getToken() {
-  localStorage.getItem("token");
+  return localStorage.getItem("token");
 }
 export function setToken(token) {
   localStorage.setItem("token", token);
+}
+export function clearToken() {
+  localStorage.removeItem("token");
+}
+export function getUserInfo() {
+  const userInfo = localStorage.getItem("userInfo");
+  return userInfo || userInfo != "" ? JSON.parse(userInfo) : null;
+}
+export function setUserInfo(userInfo) {
+  localStorage.setItem("userInfo", JSON.stringify(userInfo));
+}
+export function clearUserInfo() {
+  localStorage.removeItem("userInfo");
 }

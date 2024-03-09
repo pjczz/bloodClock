@@ -2,7 +2,7 @@
   <!-- 组件容器 -->
   <div class="chat-wrapper">
     <!-- 动态展示聊天框 -->
-    <div v-show="isChatting">
+    <div v-show="showChatting">
       <!-- 聊天框顶部 -->
       <div class="chat-head">
         <a-input-search class="playerSearch" placeholder="input search text" />
@@ -52,7 +52,7 @@
             />
             <div class="chat-btn">
               <!-- 取消按钮 -->
-              <a-button style="margin-right: 5px" @click="chatShowHandler"
+              <a-button style="margin-right: 5px" @click="handleChatBtn"
                 >取消</a-button
               >
               <!-- 发送按钮 -->
@@ -67,8 +67,8 @@
     <a-button
       icon="message"
       size="large"
-      v-show="!isChatting"
-      @click="chatShowHandler"
+      v-show="!showChatting"
+      @click="handleChatBtn"
       >Chat</a-button
     >
   </div>
@@ -78,8 +78,8 @@
 export default {
   data() {
     return {
-      // 初始化不显示聊天界面
-      isChatting: false,
+      // 显示聊天界面
+      showChatting: false,
       // hover标识
       isHovered: false,
       // 初始化滚动定位
@@ -88,42 +88,82 @@ export default {
       chatName: "",
       // textarea
       textarea: "",
+      // 聊天的玩家信息
+      chatPlayerList: [],
     };
   },
   computed: {
     // 聊天的玩家列表
-    chatPlayerList() {
-      // 玩家标志
-      const isSpectator = this.$store.state.session.isSpectator;
-      // 取出玩家信息
-      const { players } = this.$store.state.players;
-      // chatPlayerList
-      let chatPlayerList = [];
+    chatPlayersList: {
+      get() {
+        // 取出玩家信息
+        const { players } = this.$store.state.players;
+        // chatPlayerList
+        let chatPlayerList = [];
 
-      // 若为玩家
-      if (isSpectator) {
-        // StoryTeller的chatId
-        const stChatId = "host" + this.$store.state.session.sessionId;
-        chatPlayerList.push({
-          id: "host" + this.$store.state.session.sessionId,
-          name: "StoryTeller",
-          vid: "storyteller",
-          chatId: stChatId,
-        });
-      } else {
-        // 若为StoryTeller
         // 过滤字段 添加自定义字段
         chatPlayerList = players.map((item, index) => {
-          return { id: item.id, name: item.name, vid: index, chatId: item.id };
+          return { id: item.id, name: item.name, vid: index, chatId: "" };
         });
-      }
-      return chatPlayerList;
+
+        // storyTeller置顶
+        chatPlayerList.unshift({
+          id: "",
+          name: "StoryTeller",
+          vid: "storyteller",
+          chatId: "",
+        });
+
+        return chatPlayerList;
+      },
+      set() {
+        //
+      },
+    },
+    // players
+    players() {
+      return this.$store.state.players.players;
+    },
+    // userInfo
+    userInfo() {
+      return this.$store.getters["user/getUserInfo"];
     },
   },
   methods: {
     // 控制聊天界面展示与否的回调
-    chatShowHandler() {
-      this.isChatting = !this.isChatting;
+    handleChatBtn() {
+      const { sessionId } = this.$store.state.session;
+      // 房间已经存在
+      if (sessionId) {
+        // 判断是否有玩家入座
+        if (this.chatPlayerList.length > 0) {
+          // 展示聊天页面
+          this.showChatting = !this.showChatting;
+        } else {
+          // 警告玩家未入座
+          this.$notification["error"]({
+            message: "无法打开聊天页面",
+            description: "玩家未入座，请邀请玩家入座后再试",
+          });
+        }
+      } else {
+        // 警告未创建房间
+        this.$notification["error"]({
+          message: "无法打开聊天页面",
+          description: "未创建/加入房间，请创建或者加入房间后再试",
+        });
+      }
+    },
+    // 更新chatId的回调
+    setChatId() {
+      const chatId = this.userInfo.id;
+      const isSpectator = this.$store.state.session.isSpectator;
+      if (chatId) {
+        // 若为storyTeller
+        if (!isSpectator) {
+          this.chatPlayerList[0].chatId = chatId;
+        }
+      }
     },
     // 设置hover标识
     setHover(value) {

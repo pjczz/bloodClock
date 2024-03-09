@@ -2,8 +2,7 @@ import axios from "axios";
 import { errDealer, getToken } from "./tools";
 
 const http = axios.create({
-  // baseURL: import.meta.VUE_APP_PROXY_TARGET,
-  baseURL: "",
+  baseURL: process.env.VUE_APP_PROXY_API,
   headers: {
     "Content-Type": "application/json",
   },
@@ -24,7 +23,9 @@ http.interceptors.request.use(
   (config) => {
     config.headers["Content-Type"] = formatContentType(config.contentType);
     const token = getToken();
+    console.log(token, "获取token");
     if (token) config.headers.Authorization = `Bearer ${token}`;
+    console.log(config);
     return config;
   },
   (error) => {

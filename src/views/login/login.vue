@@ -33,8 +33,6 @@
 
 <script>
 import Loading from "./Loading.vue";
-import { login } from "@/api/login";
-import { setToken } from "@/utils/tools";
 export default {
   name: "Login",
   data() {
@@ -71,19 +69,13 @@ export default {
 
       //设置在登录状态
       this.isLoging = true;
-      await login(loginParam)
-        .then((res) => {
-          console.log(res, "res");
-          if (res) {
-            setToken(res);
-            this.$message.success("登录成功");
-            this.$router.push({ path: "/game" });
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      await this.$store.dispatch("user/login", loginParam);
+      if (this.$store.getters["user/getToken"]) {
+        this.$message.success("登录成功");
+        this.$router.push({ path: "/game" });
+      }
       this.isLoging = false;
+
       //请求后端,比如:
       /*this.$http.post( 'example.com/login.php', {
       param: loginParam).then((response) => {
