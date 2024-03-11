@@ -14,6 +14,10 @@ const routes = [
     component: () => import("../views/login/login.vue"), // 使用动态导入
   },
   {
+    path: "/game/:id",
+    component: () => import("../views/game/game.vue"), // 使用动态导入
+  },
+  {
     path: "/game",
     component: () => import("../views/game/game.vue"), // 使用动态导入
   },
