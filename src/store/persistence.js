@@ -63,7 +63,10 @@ module.exports = (store) => {
   if (localStorage.getItem("playerId")) {
     store.commit("session/setPlayerId", localStorage.getItem("playerId"));
   }
-  if (localStorage.getItem("session") && !window.location.hash.substr(1)) {
+  if (
+    localStorage.getItem("session") &&
+    window.location.hash.split("/")[-1] != "game"
+  ) {
     const [spectator, sessionId] = JSON.parse(localStorage.getItem("session"));
     store.commit("session/setSpectator", spectator);
     store.commit("session/setSessionId", sessionId);
