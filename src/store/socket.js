@@ -916,8 +916,8 @@ export default (store) => {
   });
 
   // check for session Id in hash
-  const sessionId = window.location.hash.substr(1);
-  if (sessionId) {
+  const sessionId = window.location.hash.replace("#/game/", "");
+  if (sessionId && sessionId != "") {
     store.commit("session/setSpectator", true);
     store.commit("session/setSessionId", sessionId);
     store.commit("toggleGrimoire", false);
