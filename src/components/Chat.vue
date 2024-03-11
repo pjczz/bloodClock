@@ -20,7 +20,7 @@
           <div
             class="player"
             :class="{ active: chatName === player.name }"
-            v-for="player in chatPlayerList"
+            v-for="player in players"
             :key="player.vid"
             @click="handleChoosePlayer(player)"
           >
@@ -88,8 +88,6 @@ export default {
       chatName: "",
       // textarea
       textarea: "",
-      // 聊天的玩家信息
-      chatPlayerList: [],
     };
   },
   computed: {
@@ -124,10 +122,6 @@ export default {
     players() {
       return this.$store.state.players.players;
     },
-    // userInfo
-    userInfo() {
-      return this.$store.getters["user/getUserInfo"];
-    },
   },
   methods: {
     // 控制聊天界面展示与否的回调
@@ -136,14 +130,14 @@ export default {
       // 房间已经存在
       if (sessionId) {
         // 判断是否有玩家入座
-        if (this.chatPlayerList.length > 0) {
+        if (this.players.length > 0) {
           // 展示聊天页面
           this.showChatting = !this.showChatting;
         } else {
           // 警告玩家未入座
           this.$notification["error"]({
             message: "无法打开聊天页面",
-            description: "玩家未入座，请邀请玩家入座后再试",
+            description: "未添加玩家，请邀请玩家入座后再试",
           });
         }
       } else {
@@ -152,17 +146,6 @@ export default {
           message: "无法打开聊天页面",
           description: "未创建/加入房间，请创建或者加入房间后再试",
         });
-      }
-    },
-    // 更新chatId的回调
-    setChatId() {
-      const chatId = this.userInfo.id;
-      const isSpectator = this.$store.state.session.isSpectator;
-      if (chatId) {
-        // 若为storyTeller
-        if (!isSpectator) {
-          this.chatPlayerList[0].chatId = chatId;
-        }
       }
     },
     // 设置hover标识

@@ -20,7 +20,6 @@ const actions = {
   async handleUserInfo({ commit }) {
     await currentUser()
       .then((res) => {
-        console.log("handleUserInfo", res);
         setUserInfo(res);
         commit("setUserInfo", res);
       })

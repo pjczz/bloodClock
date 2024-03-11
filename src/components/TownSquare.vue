@@ -147,6 +147,8 @@ export default {
         // 添加chatId
         chatId = this.$store.state.user.userInfo.id;
         this.$store.commit("players/setChatId", { playerIndex, chatId });
+        // 通知ST返回stChatId
+        this.$store.commit("session/getStId");
       }
     },
     openReminderModal(playerIndex) {

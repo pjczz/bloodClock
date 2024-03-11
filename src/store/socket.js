@@ -208,6 +208,12 @@ class LiveSession {
       case "updateChatId":
         this._updateChatId(params);
         break;
+      case "getStId":
+        this._getStId(params);
+        break;
+      case "setStId":
+        this._setStId(params);
+        break;
     }
   }
 
@@ -851,8 +857,33 @@ class LiveSession {
     const player = this._store.state.players.players[playerIndex];
     if (player.chatId !== chatId) {
       this._store.commit("players/setChatId", payload);
-      console.log("接受到更新的信息");
     }
+  }
+
+  /**
+   * Send getStId
+   */
+  sendGetStId() {
+    this._send("getStId");
+  }
+
+  /**
+   * handle getStId. ST only
+   */
+  _getStId() {
+    if (this._isSpectator) return;
+    const stId = this._store.state.session.stId;
+    if (stId) {
+      this._send("setStId", stId);
+    }
+  }
+
+  /**
+   * Set stId. players only
+   */
+  _setStId(payload) {
+    if (!this._isSpectator) return;
+    this._store.commit("session/setStId", payload);
   }
 }
 
@@ -934,8 +965,14 @@ export default (store) => {
           session.sendPlayer(payload);
         }
         break;
+      // 监听setChatId的mutation
       case "players/setChatId":
         session.sendChatId(payload);
+        break;
+      // 监听getStId的mutation
+      case "session/getStId":
+        session.sendGetStId();
+        break;
     }
   });
 
