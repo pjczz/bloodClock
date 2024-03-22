@@ -205,14 +205,14 @@ class LiveSession {
       case "pronouns":
         this._updatePlayerPronouns(params);
         break;
-      case "updateChatId":
-        this._updateChatId(params);
-        break;
-      case "getStId":
-        this._getStId(params);
+      case "reqStId":
+        this._handleReqStId(params);
         break;
       case "setStId":
         this._setStId(params);
+        break;
+      case "updateChatId":
+        this._updateChatId(params);
         break;
     }
   }
@@ -843,9 +843,45 @@ class LiveSession {
   }
 
   /**
-   * Send players chatId
+   * Save userId
+   */
+  setUserId() {
+    const userId = this._store.state.user.userInfo.id;
+    if (!userId) return;
+    this._store.commit("chat/setUserId", userId);
+  }
+
+  /**
+   * Request stId
+   */
+  reqStId() {
+    this._send("reqStId");
+  }
+
+  /**
+   * handle reqStId. ST only
+   */
+  _handleReqStId() {
+    if (this._isSpectator) return;
+    const stId = this._store.state.chat.stId;
+    if (stId) {
+      this._send("setStId", stId);
+    }
+  }
+
+  /**
+   * Set stId. players only
+   */
+  _setStId(payload) {
+    if (!this._isSpectator) return;
+    this._store.commit("chat/setStId", payload);
+  }
+
+  /**
+   * Send players chatId. players only
    */
   sendChatId(payload) {
+    if (!this._isSpectator) return;
     this._send("updateChatId", payload);
   }
 
@@ -858,32 +894,6 @@ class LiveSession {
     if (player.chatId !== chatId) {
       this._store.commit("players/setChatId", payload);
     }
-  }
-
-  /**
-   * Send getStId
-   */
-  sendGetStId() {
-    this._send("getStId");
-  }
-
-  /**
-   * handle getStId. ST only
-   */
-  _getStId() {
-    if (this._isSpectator) return;
-    const stId = this._store.state.session.stId;
-    if (stId) {
-      this._send("setStId", stId);
-    }
-  }
-
-  /**
-   * Set stId. players only
-   */
-  _setStId(payload) {
-    if (!this._isSpectator) return;
-    this._store.commit("session/setStId", payload);
   }
 }
 
@@ -965,13 +975,17 @@ export default (store) => {
           session.sendPlayer(payload);
         }
         break;
-      // 监听setChatId的mutation
+      // 监听user的setUserInfo
+      case "user/setUserInfo":
+        session.setUserId();
+        break;
+      // 监听chat的reqStId
+      case "chat/reqStId":
+        session.reqStId();
+        break;
+      // 监听players的setChatId
       case "players/setChatId":
         session.sendChatId(payload);
-        break;
-      // 监听getStId的mutation
-      case "session/getStId":
-        session.sendGetStId();
         break;
     }
   });

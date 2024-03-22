@@ -20,8 +20,8 @@
           <div
             class="player"
             :class="{ active: chatName === player.name }"
-            v-for="player in players"
-            :key="player.vid"
+            v-for="player in chatPlayerList"
+            :key="player.name"
             @click="handleChoosePlayer(player)"
           >
             <!-- 玩家信息 -->
@@ -52,7 +52,7 @@
             />
             <div class="chat-btn">
               <!-- 取消按钮 -->
-              <a-button style="margin-right: 5px" @click="handleChatBtn"
+              <a-button style="margin-right: 5px" @click="hideChat"
                 >取消</a-button
               >
               <!-- 发送按钮 -->
@@ -68,7 +68,7 @@
       icon="message"
       size="large"
       v-show="!showChatting"
-      @click="handleChatBtn"
+      @click="showChat"
       >Chat</a-button
     >
   </div>
@@ -84,57 +84,73 @@ export default {
       isHovered: false,
       // 初始化滚动定位
       scrollPosition: 0,
+      // 聊天列表
+      chatPlayerList: [],
       // 选中的聊天对象名
       chatName: "",
       // textarea
       textarea: "",
+      // chatSocket
+      chatSocket: null,
+      // chatSocketMsg
+      csMsg: {
+        type: "pm", // 默认私聊pm
+        message: "", // 发送的消息
+        subtxt: "", // 后端返回的
+        extra: "", // 私聊对象
+      },
     };
   },
   computed: {
-    // 聊天的玩家列表
-    chatPlayersList: {
-      get() {
-        // 取出玩家信息
-        const { players } = this.$store.state.players;
-        // chatPlayerList
-        let chatPlayerList = [];
-
-        // 过滤字段 添加自定义字段
-        chatPlayerList = players.map((item, index) => {
-          return { id: item.id, name: item.name, vid: index, chatId: "" };
-        });
-
-        // storyTeller置顶
-        chatPlayerList.unshift({
-          id: "",
-          name: "StoryTeller",
-          vid: "storyteller",
-          chatId: "",
-        });
-
-        return chatPlayerList;
-      },
-      set() {
-        //
-      },
-    },
     // players
     players() {
       return this.$store.state.players.players;
     },
+    // stId
+    stId() {
+      return this.$store.state.chat.stId;
+    },
+  },
+  watch: {
+    // players变化同步修改chatPlayerList
+    players: {
+      handler: function () {
+        console.log("watch:players");
+        const arr = [{ name: "StoryTeller", id: "", chatId: this.stId }];
+        this.chatPlayerList = arr.concat(this.players);
+      },
+      deep: true,
+      immediate: true,
+    },
+    stId() {
+      this.chatPlayerList[0].chatId = this.stId;
+    },
   },
   methods: {
     // 控制聊天界面展示与否的回调
-    handleChatBtn() {
-      const { sessionId } = this.$store.state.session;
+    showChat() {
+      const { sessionId, isSpectator, claimedSeat } = this.$store.state.session;
       // 房间已经存在
       if (sessionId) {
-        // 判断是否有玩家入座
+        // 判断players
         if (this.players.length > 0) {
-          // 展示聊天页面
-          this.showChatting = !this.showChatting;
+          // ST可以直接打开
+          if (!isSpectator) {
+            // 展示聊天页面
+            this.showChatting = true;
+          } else if (claimedSeat !== -1) {
+            // players需要入座后才能打开
+            // 展示聊天页面
+            this.showChatting = true;
+          } else {
+            // 警告玩家未入座
+            this.$notification["error"]({
+              message: "无法打开聊天页面",
+              description: "未入座无法聊天，请入座后再试",
+            });
+          }
         } else {
-          // 警告玩家未入座
+          // 警告未添加玩家
           this.$notification["error"]({
             message: "无法打开聊天页面",
             description: "未添加玩家，请邀请玩家入座后再试",
@@ -147,6 +163,10 @@ export default {
           description: "未创建/加入房间，请创建或者加入房间后再试",
         });
       }
+    },
+    // hideChat
+    hideChat() {
+      this.showChatting = false;
     },
     // 设置hover标识
     setHover(value) {
@@ -161,9 +181,7 @@ export default {
       event.stopPropagation();
     },
     // 发送
-    sendMessage() {
-      console.log("sendMessage");
-    },
+    sendMessage() {},
   },
 };
 </script>
@@ -262,3 +280,4 @@ export default {
   }
 }
 </style>
+../store/chatSocket

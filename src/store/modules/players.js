@@ -155,7 +155,7 @@ const mutations = {
       }
     }
   },
-  // 用于处理chatId的mutation
+  // set players chatId
   setChatId(state, { playerIndex, chatId }) {
     state.players[playerIndex].chatId = chatId;
   },

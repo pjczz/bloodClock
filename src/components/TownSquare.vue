@@ -133,22 +133,21 @@ export default {
       }
     },
     claimSeat(playerIndex) {
-      // 若为storyTeller则return
+      // players only
       if (!this.session.isSpectator) return;
-      let chatId = "";
       if (this.session.playerId === this.players[playerIndex].id) {
         // 离开座位
         this.$store.commit("session/claimSeat", -1);
         // 清空chatId
-        this.$store.commit("players/setChatId", { playerIndex, chatId });
+        this.$store.commit("players/setChatId", { playerIndex, chatId: "" });
       } else {
         // 入座
         this.$store.commit("session/claimSeat", playerIndex);
         // 添加chatId
-        chatId = this.$store.state.user.userInfo.id;
+        let chatId = this.$store.state.chat.userId;
         this.$store.commit("players/setChatId", { playerIndex, chatId });
         // 通知ST返回stChatId
-        this.$store.commit("session/getStId");
+        this.$store.commit("chat/reqStId");
       }
     },
     openReminderModal(playerIndex) {

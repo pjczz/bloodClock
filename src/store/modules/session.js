@@ -18,7 +18,6 @@ const state = () => ({
   playerCount: 0,
   ping: 0,
   playerId: "",
-  stId: "", // ST chatId
   claimedSeat: -1,
   nomination: false,
   votes: [],
@@ -41,7 +40,6 @@ const set = (key) => (state, val) => {
 };
 
 const mutations = {
-  setStId: set("stId"),
   setPlayerId: set("playerId"),
   setSpectator: set("isSpectator"),
   setReconnecting: set("isReconnecting"),
@@ -106,10 +104,6 @@ const mutations = {
   voteSync: handleVote,
   lockVote(state, lock) {
     state.lockedVote = lock !== undefined ? lock : state.lockedVote + 1;
-  },
-  // 用户请求stId
-  getStId() {
-    console.log("getStId");
   },
 };
 

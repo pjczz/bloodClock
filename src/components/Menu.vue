@@ -255,10 +255,9 @@ export default {
         this.$store.commit("session/setSpectator", false);
         this.$store.commit("session/setSessionId", sessionId);
         this.copySessionUrl();
-        // 添加ST的id到session里
+        // set stId
         const stId = this.$store.state.user.userInfo.id;
-        this.$store.commit("session/setStId", stId);
-        console.log("setStId", stId);
+        this.$store.commit("chat/setStId", stId);
       }
     },
     copySessionUrl() {
@@ -306,6 +305,7 @@ export default {
       if (confirm("Are you sure you want to leave the active live game?")) {
         this.$store.commit("session/setSpectator", false);
         this.$store.commit("session/setSessionId", "");
+        this.$store.commit("chat/setStId", "");
       }
     },
     addPlayer() {
