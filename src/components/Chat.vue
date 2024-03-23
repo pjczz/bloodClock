@@ -90,15 +90,6 @@ export default {
       chatName: "",
       // textarea
       textarea: "",
-      // chatSocket
-      chatSocket: null,
-      // chatSocketMsg
-      csMsg: {
-        type: "pm", // 默认私聊pm
-        message: "", // 发送的消息
-        subtxt: "", // 后端返回的
-        extra: "", // 私聊对象
-      },
     };
   },
   computed: {
@@ -115,7 +106,6 @@ export default {
     // players变化同步修改chatPlayerList
     players: {
       handler: function () {
-        console.log("watch:players");
         const arr = [{ name: "StoryTeller", id: "", chatId: this.stId }];
         this.chatPlayerList = arr.concat(this.players);
       },
@@ -242,6 +232,7 @@ export default {
         height: 80px;
         background-color: #fbfbfb;
         border-bottom: 1px solid #e8e8e8;
+        cursor: pointer;
       }
       .active {
         background-color: #e3e3e3;

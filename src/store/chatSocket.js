@@ -9,12 +9,12 @@ class ChatSocket {
   }
 
   // 定义连接服务器的方法
-  connect() {
+  _open() {
     this._socket = new WebSocket(this._url);
 
     this._socket.onopen = () => {
       // 发送自身id创建client
-      this._updateInfo();
+      this.updateInfo();
     };
 
     this._socket.onclose = () => {
@@ -60,6 +60,13 @@ class ChatSocket {
     };
   }
 
+  // connect
+  connect(userId) {
+    // console.log(this._url, userId);
+    this._user = userId;
+    this._open();
+  }
+
   // send
   _send(payload) {
     // json格式化
@@ -67,7 +74,7 @@ class ChatSocket {
   }
 
   // update
-  _updateInfo() {
+  updateInfo() {
     this._send({
       user: this._user,
       type: "update",
@@ -75,10 +82,10 @@ class ChatSocket {
   }
 
   // 外部调用的方法
-  sendSocket(payload) {
-    this._send(payload);
-    console.log("sendSocket");
-  }
+  // sendSocket(payload) {
+  //   this._send(payload);
+  //   console.log("sendSocket");
+  // }
 }
 
 export default (store) => {
@@ -86,10 +93,10 @@ export default (store) => {
   const chatSocket = new ChatSocket(store);
 
   // listen to mutation
-  store.subscribe(({ type, payload }, state) => {
+  store.subscribe(({ type }, state) => {
     switch (type) {
-      case "chat/updateUser":
-        if (state) chatSocket.sendSocket(payload);
+      case "chat/setUserId":
+        chatSocket.connect(state.chat.userId);
         break;
     }
   });
