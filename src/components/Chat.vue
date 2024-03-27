@@ -40,15 +40,40 @@
         <!-- 聊天框 -->
         <div class="chat">
           <!-- 历史记录 -->
-          <div class="chat-history"></div>
+          <div class="chat-history">
+            <div
+              class="chat-history-container"
+              v-for="ch in chatHistoryList"
+              :key="ch.mid"
+            >
+              <!-- 聊天信息和头像 -->
+              <div class="history-user" v-if="ch.user == userId">
+                <div class="history-text">{{ ch.message }}</div>
+                <a-avatar
+                  icon="user"
+                  size="small"
+                  style="margin: 0 10px"
+                ></a-avatar>
+              </div>
+              <div class="history-extra" v-else>
+                <a-avatar
+                  icon="user"
+                  size="small"
+                  style="margin: 0 10px"
+                ></a-avatar>
+                <div class="history-text">{{ ch.message }}</div>
+              </div>
+            </div>
+          </div>
           <!-- 输入框 -->
           <div class="chat-input">
             <a-textarea
               class="input-box"
               placeholder=""
-              :rows="8"
+              :rows="6"
               @keyup="handleStopPropagation"
-              v-model="textarea"
+              v-model="inputValue"
+              @pressEnter="sendMessage"
             />
             <div class="chat-btn">
               <!-- 取消按钮 -->
@@ -89,7 +114,30 @@ export default {
       // 选中的聊天对象名
       chatName: "",
       // textarea
-      textarea: "",
+      inputValue: "",
+      chatHistoryList: [
+        {
+          extra: "39ffe05c-16c0-40a9-9153-e1570ea5a11c",
+          id: 66,
+          message: "hello bbb",
+          mid: "odsgk",
+          subtxt: "PM to 39ffe05c-16c0-40a9-9153-e1570ea5a11c",
+          timestamp: 1711547144324,
+          type: "pm",
+          user: "ad7f8790-6413-4a25-9912-ea4e64c65ec5",
+        },
+        {
+          extra: "ad7f8790-6413-4a25-9912-ea4e64c65ec5",
+          id: 66,
+          message:
+            "hello st lsjoiyoghe lhosahiehf kdhsiuhebg skdhsig aohfiouehifhiuash feouhwiu4hwkhsiaohfoihwaiousye iuhasih3iufuhasigouh  foiuyw3oihfoqwh ",
+          mid: "ygktt",
+          subtxt: "",
+          timestamp: 1711547174695,
+          type: "pm",
+          user: "39ffe05c-16c0-40a9-9153-e1570ea5a11c",
+        },
+      ],
     };
   },
   computed: {
@@ -100,6 +148,10 @@ export default {
     // stId
     stId() {
       return this.$store.state.chat.stId;
+    },
+    // userId
+    userId() {
+      return this.$store.state.chat.userId;
     },
   },
   watch: {
@@ -117,6 +169,18 @@ export default {
     },
   },
   methods: {
+    /**
+     * Notice Error Message
+     * @param {String} message
+     * @param {String} description
+     */
+    notice(message, description) {
+      this.$notification["error"]({
+        message,
+        description,
+      });
+    },
+
     // 控制聊天界面展示与否的回调
     showChat() {
       const { sessionId, isSpectator, claimedSeat } = this.$store.state.session;
@@ -154,24 +218,53 @@ export default {
         });
       }
     },
+
     // hideChat
     hideChat() {
       this.showChatting = false;
     },
+
     // 设置hover标识
     setHover(value) {
       this.isHovered = value;
     },
+
     // 处理选择聊天对象
     handleChoosePlayer(player) {
       this.chatName = player.name;
     },
+
     // input时阻止冒泡
     handleStopPropagation() {
       event.stopPropagation();
     },
-    // 发送
-    sendMessage() {},
+
+    // 发送按钮
+    sendMessage() {
+      event.preventDefault();
+      const { inputValue, chatName, chatPlayerList } = this;
+      if (!chatName) return;
+      // 输入非空判断
+      if (!inputValue) {
+        this.notice("发送失败！", "输入不能为空！");
+        return;
+      }
+      // 寻找
+      const player = chatPlayerList.find((item) => {
+        return item.name == chatName;
+      });
+      if (!player.chatId) {
+        this.notice("发送失败！", "玩家未入座，请等待玩家入座后再试。");
+        return;
+      }
+
+      // 整理
+      const message = inputValue;
+      const extra = player.chatId;
+      console.log(message, extra);
+      // 发送
+      this.$store.dispatch("chat/handleSendMessage", { extra, message });
+    },
   },
 };
 </script>
@@ -245,6 +338,29 @@ export default {
         width: 500px;
         height: 350px;
         background-color: #f3f3f3;
+        .chat-history-container {
+          font-size: 18px;
+          font-weight: 100;
+          color: black;
+          margin: 0 15px 20px 15px;
+          .history-user {
+            display: flex;
+            justify-content: flex-end;
+            .history-text {
+              max-width: 300px;
+              padding: 5px 10px;
+              background-color: #95ec69;
+            }
+          }
+          .history-extra {
+            display: flex;
+            .history-text {
+              max-width: 300px;
+              padding: 5px 10px;
+              background-color: #fff;
+            }
+          }
+        }
       }
       .chat-input {
         width: 500px;
@@ -260,6 +376,8 @@ export default {
             // ant-input focus的蓝框效果是用box-shadow实现的
             box-shadow: none;
           }
+          // 下移
+          margin: 20px 0 0 10px;
         }
         .chat-btn {
           position: absolute;

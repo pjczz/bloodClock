@@ -17,6 +17,9 @@ class ChatSocket {
       this.updateInfo();
     };
 
+    // 接受消息事件
+    this._socket.addEventListener("message", this._handleMessage.bind(this));
+
     this._socket.onclose = () => {
       console.log("chatSocket关闭连接");
     };
@@ -24,39 +27,6 @@ class ChatSocket {
     // 连接错误事件
     this._socket.onerror = function (err) {
       console.log("chatSocket错误：", err);
-    };
-
-    // 接受消息事件
-    this._socket.onmessage = function (e) {
-      const data = JSON.parse(e.data);
-      console.log("socket-onmessage", data);
-
-      if (data.type == "pm") {
-        console.log(data);
-        return data.message;
-      }
-
-      if (data.type == "server") {
-        switch (data.info) {
-          case "connection":
-            this._clients[data.user.id] = data.user;
-            break;
-
-          // disconnection
-          case "disconnection":
-            delete this._clients[data.user.id];
-            // 通知组件disconnect
-            break;
-
-          case "clients":
-            this._clients = data.clients;
-            break;
-
-          case "user":
-            this._user = data.client.id;
-            break;
-        }
-      }
     };
   }
 
@@ -73,6 +43,16 @@ class ChatSocket {
     this._socket.send(JSON.stringify(payload));
   }
 
+  // handleMessage
+  _handleMessage(e) {
+    const data = JSON.parse(e.data);
+    // console.log(data);
+    switch (data.type) {
+      case "pm":
+        this._handleReceiveMsg(data);
+    }
+  }
+
   // update
   updateInfo() {
     this._send({
@@ -81,11 +61,16 @@ class ChatSocket {
     });
   }
 
-  // 外部调用的方法
-  // sendSocket(payload) {
-  //   this._send(payload);
-  //   console.log("sendSocket");
-  // }
+  // Send Message
+  sendMessage(payload) {
+    this._send(payload);
+    console.log("sendSocket");
+  }
+
+  // Receive Message
+  _handleReceiveMsg(payload) {
+    this._store.dispatch("chat/handleReceiveMsg", payload);
+  }
 }
 
 export default (store) => {
@@ -93,11 +78,13 @@ export default (store) => {
   const chatSocket = new ChatSocket(store);
 
   // listen to mutation
-  store.subscribe(({ type }, state) => {
+  store.subscribe(({ type, payload }, state) => {
     switch (type) {
       case "chat/setUserId":
         chatSocket.connect(state.chat.userId);
         break;
+      case "chat/sendMessage":
+        chatSocket.sendMessage(payload);
     }
   });
 };
