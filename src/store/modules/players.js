@@ -6,6 +6,7 @@ const NEWPLAYER = {
   isVoteless: false,
   isDead: false,
   pronouns: "",
+  chatId: "",
 };
 
 const state = () => ({
@@ -20,7 +21,7 @@ const getters = {
   },
   nonTravelers({ players }) {
     const nonTravelers = players.filter(
-      (player) => player.role.team !== "traveler",
+      (player) => player.role.team !== "traveler"
     );
     return Math.min(nonTravelers.length, 15);
   },
@@ -153,6 +154,10 @@ const mutations = {
         state.fabled = fabled;
       }
     }
+  },
+  // set players chatId
+  setChatId(state, { playerIndex, chatId }) {
+    state.players[playerIndex].chatId = chatId;
   },
 };
 

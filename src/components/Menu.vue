@@ -248,13 +248,16 @@ export default {
       if (this.session.sessionId) return;
       const sessionId = prompt(
         "Enter a channel number / name for your session",
-        Math.round(Math.random() * 10000),
+        Math.round(Math.random() * 10000)
       );
       if (sessionId) {
         this.$store.commit("session/clearVoteHistory");
         this.$store.commit("session/setSpectator", false);
         this.$store.commit("session/setSessionId", sessionId);
         this.copySessionUrl();
+        // set stId
+        const stId = this.$store.state.user.userInfo.id;
+        this.$store.commit("chat/setStId", stId);
       }
     },
     copySessionUrl() {
@@ -272,7 +275,7 @@ export default {
           (() => {
             this.$store.commit("session/distributeRoles", false);
           }).bind(this),
-          2000,
+          2000
         );
       }
     },
@@ -286,7 +289,7 @@ export default {
     joinSession() {
       if (this.session.sessionId) return this.leaveSession();
       let sessionId = prompt(
-        "Enter the channel number / name of the session you want to join",
+        "Enter the channel number / name of the session you want to join"
       );
       if (sessionId.match(/^https?:\/\//i)) {
         sessionId = sessionId.split("#").pop();
@@ -302,6 +305,7 @@ export default {
       if (confirm("Are you sure you want to leave the active live game?")) {
         this.$store.commit("session/setSpectator", false);
         this.$store.commit("session/setSessionId", "");
+        this.$store.commit("chat/setStId", "");
       }
     },
     addPlayer() {

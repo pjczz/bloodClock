@@ -30,7 +30,7 @@ http.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  },
+  }
 );
 
 // 响应拦截器
@@ -52,7 +52,7 @@ http.interceptors.response.use(
     // 对响应错误做些什么
     errDealer(error.response.data.code, error.response.data.message);
     return Promise.reject(error);
-  },
+  }
 );
 
 export default http;

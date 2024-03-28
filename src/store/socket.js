@@ -28,7 +28,7 @@ class LiveSession {
       this._wss +
         channel +
         "/" +
-        (this._isSpectator ? this._store.state.session.playerId : "host"),
+        (this._isSpectator ? this._store.state.session.playerId : "host")
     );
     this._socket.addEventListener("message", this._handleMessage.bind(this));
     this._socket.onopen = this._onOpen.bind(this);
@@ -41,7 +41,7 @@ class LiveSession {
         this._store.commit("session/setReconnecting", true);
         this._reconnectTimer = setTimeout(
           () => this.connect(channel),
-          3 * 1000,
+          3 * 1000
         );
       } else {
         this._store.commit("session/setSessionId", "");
@@ -87,7 +87,7 @@ class LiveSession {
       this._sendDirect(
         "host",
         "getGamestate",
-        this._store.state.session.playerId,
+        this._store.state.session.playerId
       );
     } else {
       this.sendGamestate();
@@ -151,7 +151,7 @@ class LiveSession {
           // create vote history record
           this._store.commit(
             "session/addHistory",
-            this._store.state.players.players,
+            this._store.state.players.players
           );
         }
         this._store.commit("session/nomination", { nomination: params });
@@ -205,6 +205,15 @@ class LiveSession {
       case "pronouns":
         this._updatePlayerPronouns(params);
         break;
+      case "reqStId":
+        this._handleReqStId(params);
+        break;
+      case "setStId":
+        this._setStId(params);
+        break;
+      case "updateChatId":
+        this._updateChatId(params);
+        break;
     }
   }
 
@@ -217,7 +226,7 @@ class LiveSession {
     if (!this._store.state.session.playerId) {
       this._store.commit(
         "session/setPlayerId",
-        Math.random().toString(36).substr(2),
+        Math.random().toString(36).substr(2)
       );
     }
     this._pings = {};
@@ -404,7 +413,7 @@ class LiveSession {
         alert(
           `This session contains custom characters that can't be found. ` +
             `Please load them before joining! ` +
-            `Missing roles: ${missing.join(", ")}`,
+            `Missing roles: ${missing.join(", ")}`
         );
         this.disconnect();
         this._store.commit("toggleModal", "edition");
@@ -420,7 +429,7 @@ class LiveSession {
     const { fabled } = this._store.state.players;
     this._send(
       "fabled",
-      fabled.map((f) => (f.isCustom ? f : { id: f.id })),
+      fabled.map((f) => (f.isCustom ? f : { id: f.id }))
     );
   }
 
@@ -573,7 +582,7 @@ class LiveSession {
           const pings = Object.values(this._pings);
           this._store.commit(
             "session/setPing",
-            Math.round(pings.reduce((a, b) => a + b, 0) / pings.length),
+            Math.round(pings.reduce((a, b) => a + b, 0) / pings.length)
           );
         }
       }
@@ -585,7 +594,7 @@ class LiveSession {
     if (!this._isSpectator || playerIdOrCount) {
       this._store.commit(
         "session/setPlayerCount",
-        this._isSpectator ? playerIdOrCount : Object.keys(this._players).length,
+        this._isSpectator ? playerIdOrCount : Object.keys(this._players).length
       );
     }
   }
@@ -600,7 +609,7 @@ class LiveSession {
     delete this._players[playerId];
     this._store.commit(
       "session/setPlayerCount",
-      Object.keys(this._players).length,
+      Object.keys(this._players).length
     );
   }
 
@@ -708,7 +717,7 @@ class LiveSession {
     if (this._isSpectator) return;
     this._send(
       "isVoteHistoryAllowed",
-      this._store.state.session.isVoteHistoryAllowed,
+      this._store.state.session.isVoteHistoryAllowed
     );
   }
 
@@ -832,6 +841,60 @@ class LiveSession {
     if (this._isSpectator) return;
     this._send("remove", payload);
   }
+
+  /**
+   * Save userId
+   */
+  setUserId() {
+    const userId = this._store.state.user.userInfo.id;
+    if (!userId) return;
+    this._store.commit("chat/setUserId", userId);
+  }
+
+  /**
+   * Request stId
+   */
+  reqStId() {
+    this._send("reqStId");
+  }
+
+  /**
+   * handle reqStId. ST only
+   */
+  _handleReqStId() {
+    if (this._isSpectator) return;
+    const stId = this._store.state.chat.stId;
+    if (stId) {
+      this._send("setStId", stId);
+    }
+  }
+
+  /**
+   * Set stId. players only
+   */
+  _setStId(payload) {
+    if (!this._isSpectator) return;
+    this._store.commit("chat/setStId", payload);
+  }
+
+  /**
+   * Send players chatId. players only
+   */
+  sendChatId(payload) {
+    if (!this._isSpectator) return;
+    this._send("updateChatId", payload);
+  }
+
+  /**
+   * Update players chatId
+   */
+  _updateChatId(payload) {
+    const { playerIndex, chatId } = payload;
+    const player = this._store.state.players.players[playerIndex];
+    if (player.chatId !== chatId) {
+      this._store.commit("players/setChatId", payload);
+    }
+  }
 }
 
 export default (store) => {
@@ -911,6 +974,18 @@ export default (store) => {
         } else {
           session.sendPlayer(payload);
         }
+        break;
+      // 监听user的setUserInfo
+      case "user/setUserInfo":
+        session.setUserId();
+        break;
+      // 监听chat的reqStId
+      case "chat/reqStId":
+        session.reqStId();
+        break;
+      // 监听players的setChatId
+      case "players/setChatId":
+        session.sendChatId(payload);
         break;
     }
   });

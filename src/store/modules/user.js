@@ -18,16 +18,16 @@ const getters = {
 
 const actions = {
   async handleUserInfo({ commit }) {
-    const res = await currentUser()
+    await currentUser()
       .then((res) => {
         setUserInfo(res);
+        commit("setUserInfo", res);
       })
       .catch((err) => {
         clearUserInfo();
         console.error(err);
+        commit("setUserInfo", {});
       });
-
-    commit("setUserInfo", res);
   },
   // 退出登录
   async logout({ commit }) {

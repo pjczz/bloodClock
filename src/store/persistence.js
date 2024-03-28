@@ -43,7 +43,7 @@ module.exports = (store) => {
   if (localStorage.fabled !== undefined) {
     store.commit("players/setFabled", {
       fabled: JSON.parse(localStorage.fabled).map(
-        (fabled) => store.state.fabled.get(fabled.id) || fabled,
+        (fabled) => store.state.fabled.get(fabled.id) || fabled
       ),
     });
   }
@@ -56,7 +56,7 @@ module.exports = (store) => {
           store.state.roles.get(player.role) ||
           store.getters.rolesJSONbyId.get(player.role) ||
           {},
-      })),
+      }))
     );
   }
   /**** Session related data *****/
@@ -70,6 +70,19 @@ module.exports = (store) => {
     const [spectator, sessionId] = JSON.parse(localStorage.getItem("session"));
     store.commit("session/setSpectator", spectator);
     store.commit("session/setSessionId", sessionId);
+  }
+  /**** Chat related data ****/
+  if (localStorage.getItem("userId")) {
+    store.commit("chat/setUserId", localStorage.getItem("userId"));
+  }
+  if (localStorage.getItem("stId")) {
+    store.commit("chat/setStId", localStorage.getItem("stId"));
+  }
+  if (localStorage.getItem("crs")) {
+    store.commit(
+      "chat/setChatRecords",
+      JSON.parse(localStorage.getItem("crs"))
+    );
   }
 
   // listen to mutations
@@ -134,7 +147,7 @@ module.exports = (store) => {
       case "players/setBluff":
         localStorage.setItem(
           "bluffs",
-          JSON.stringify(state.players.bluffs.map(({ id }) => id)),
+          JSON.stringify(state.players.bluffs.map(({ id }) => id))
         );
         break;
       case "players/setFabled":
@@ -142,9 +155,9 @@ module.exports = (store) => {
           "fabled",
           JSON.stringify(
             state.players.fabled.map((fabled) =>
-              fabled.isCustom ? fabled : { id: fabled.id },
-            ),
-          ),
+              fabled.isCustom ? fabled : { id: fabled.id }
+            )
+          )
         );
         break;
       case "players/add":
@@ -162,8 +175,8 @@ module.exports = (store) => {
                 ...player,
                 // simplify the stored data
                 role: player.role.id || {},
-              })),
-            ),
+              }))
+            )
           );
         } else {
           localStorage.removeItem("players");
@@ -173,7 +186,7 @@ module.exports = (store) => {
         if (payload) {
           localStorage.setItem(
             "session",
-            JSON.stringify([state.session.isSpectator, payload]),
+            JSON.stringify([state.session.isSpectator, payload])
           );
         } else {
           localStorage.removeItem("session");
@@ -184,6 +197,28 @@ module.exports = (store) => {
           localStorage.setItem("playerId", payload);
         } else {
           localStorage.removeItem("playerId");
+        }
+        break;
+
+      case "chat/setUserId":
+        if (payload) {
+          localStorage.setItem("userId", payload);
+        } else {
+          localStorage.removeItem("userId");
+        }
+        break;
+      case "chat/setStId":
+        if (payload) {
+          localStorage.setItem("stId", payload);
+        } else {
+          localStorage.removeItem("stId");
+        }
+        break;
+      case "chat/setChatRecords":
+        if (payload) {
+          localStorage.setItem("crs", JSON.stringify(payload));
+        } else {
+          localStorage.removeItem("crs");
         }
         break;
     }

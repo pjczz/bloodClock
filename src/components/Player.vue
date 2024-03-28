@@ -189,7 +189,7 @@
                 : require(
                     '../assets/icons/' +
                       (reminder.imageAlt || reminder.role) +
-                      '.png',
+                      '.png'
                   )
             })`,
           }"

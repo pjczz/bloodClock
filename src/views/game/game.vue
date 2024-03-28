@@ -37,6 +37,7 @@
     <GameStateModal />
     <Gradients />
     <span id="version">v{{ version }}</span>
+    <Chat />
   </div>
 </template>
 <script>
@@ -55,6 +56,7 @@ import NightOrderModal from "@/components/modals/NightOrderModal";
 import FabledModal from "@/components/modals/FabledModal";
 import VoteHistoryModal from "@/components/modals/VoteHistoryModal";
 import GameStateModal from "@/components/modals/GameStateModal";
+import Chat from "@/components/Chat";
 
 export default {
   components: {
@@ -71,6 +73,7 @@ export default {
     EditionModal,
     RolesModal,
     Gradients,
+    Chat,
   },
   computed: {
     ...mapState(["grimoire", "session"]),

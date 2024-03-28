@@ -133,11 +133,21 @@ export default {
       }
     },
     claimSeat(playerIndex) {
+      // players only
       if (!this.session.isSpectator) return;
       if (this.session.playerId === this.players[playerIndex].id) {
+        // 离开座位
         this.$store.commit("session/claimSeat", -1);
+        // 清空chatId
+        this.$store.commit("players/setChatId", { playerIndex, chatId: "" });
       } else {
+        // 入座
         this.$store.commit("session/claimSeat", playerIndex);
+        // 添加chatId
+        let chatId = this.$store.state.chat.userId;
+        this.$store.commit("players/setChatId", { playerIndex, chatId });
+        // 通知ST返回stChatId
+        this.$store.commit("chat/reqStId");
       }
     },
     openReminderModal(playerIndex) {
@@ -155,7 +165,7 @@ export default {
       if (this.session.isSpectator || this.session.lockedVote) return;
       if (
         confirm(
-          `Do you really want to remove ${this.players[playerIndex].name}?`,
+          `Do you really want to remove ${this.players[playerIndex].name}?`
         )
       ) {
         const { nomination } = this.session;
