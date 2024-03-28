@@ -5,7 +5,11 @@
     <div v-show="showChatting">
       <!-- 聊天框顶部 -->
       <div class="chat-head">
-        <a-input-search class="playerSearch" placeholder="input search text" />
+        <a-input-search
+          class="playerSearch"
+          placeholder="input search text"
+          @keyup="handleStopPropagation"
+        />
         <span class="chatName">{{ chatName }}</span>
       </div>
       <!-- 聊天框 -->
@@ -40,7 +44,11 @@
         <!-- 聊天框 -->
         <div class="chat">
           <!-- 历史记录 -->
-          <div class="chat-history">
+          <div class="chat-history" ref="scrollContainer">
+            <!-- 空历史记录提示卡片 -->
+            <div v-if="chatHistoryList.length == 0" class="notice-card">
+              ———— {{ extra ? "暂无历史记录" : "该玩家未入座" }}————
+            </div>
             <div
               class="chat-history-container"
               v-for="ch in chatHistoryList"
@@ -72,7 +80,7 @@
               placeholder=""
               :rows="6"
               @keyup="handleStopPropagation"
-              v-model="inputValue"
+              v-model="message"
               @pressEnter="sendMessage"
             />
             <div class="chat-btn">
@@ -100,6 +108,7 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
 export default {
   data() {
     return {
@@ -113,59 +122,63 @@ export default {
       chatPlayerList: [],
       // 选中的聊天对象名
       chatName: "",
-      // textarea
-      inputValue: "",
-      chatHistoryList: [
-        {
-          extra: "39ffe05c-16c0-40a9-9153-e1570ea5a11c",
-          id: 66,
-          message: "hello bbb",
-          mid: "odsgk",
-          subtxt: "PM to 39ffe05c-16c0-40a9-9153-e1570ea5a11c",
-          timestamp: 1711547144324,
-          type: "pm",
-          user: "ad7f8790-6413-4a25-9912-ea4e64c65ec5",
-        },
-        {
-          extra: "ad7f8790-6413-4a25-9912-ea4e64c65ec5",
-          id: 66,
-          message:
-            "hello st lsjoiyoghe lhosahiehf kdhsiuhebg skdhsig aohfiouehifhiuash feouhwiu4hwkhsiaohfoihwaiousye iuhasih3iufuhasigouh  foiuyw3oihfoqwh ",
-          mid: "ygktt",
-          subtxt: "",
-          timestamp: 1711547174695,
-          type: "pm",
-          user: "39ffe05c-16c0-40a9-9153-e1570ea5a11c",
-        },
-      ],
+      // 选中对象的chatId
+      extra: "",
+      // 输入框的内容
+      message: "",
     };
   },
   computed: {
-    // players
-    players() {
-      return this.$store.state.players.players;
-    },
-    // stId
-    stId() {
-      return this.$store.state.chat.stId;
-    },
-    // userId
-    userId() {
-      return this.$store.state.chat.userId;
+    ...mapState("chat", ["stId", "userId", "chatRecords"]),
+    ...mapState("players", ["players"]),
+    // chatHistoryList
+    chatHistoryList() {
+      const res = this.chatRecords.filter((item) => {
+        return (
+          (item.extra == this.extra && item.user == this.userId) ||
+          (item.extra == this.userId && item.user == this.extra)
+        );
+      });
+      return res;
     },
   },
   watch: {
     // players变化同步修改chatPlayerList
     players: {
       handler: function () {
-        const arr = [{ name: "StoryTeller", id: "", chatId: this.stId }];
-        this.chatPlayerList = arr.concat(this.players);
+        // ST页面
+        if (!this.$store.state.session.isSpectator) {
+          this.chatPlayerList = this.players;
+        } else {
+          // 玩家页面
+          // 添加ST
+          const arr = [{ name: "StoryTeller", id: "" }];
+          this.chatPlayerList = arr.concat(this.players);
+          // 去除自身
+          const idx = this.chatPlayerList.findIndex((item) => {
+            return item.chatId == this.userId;
+          });
+          if (idx !== -1) this.chatPlayerList.splice(idx, 1);
+        }
       },
       deep: true,
       immediate: true,
     },
-    stId() {
-      this.chatPlayerList[0].chatId = this.stId;
+    // extra随变
+    chatName() {
+      if (this.chatName == "StoryTeller") {
+        this.extra = this.stId;
+        return;
+      }
+      const player = this.chatPlayerList.find((item) => {
+        return item.name == this.chatName;
+      });
+      this.extra = player ? player.chatId : "";
+    },
+    // 聊天记录每次变化都自动触底
+    chatHistoryList() {
+      // 滚动最底
+      this.scrollHistoryToBottom();
     },
   },
   methods: {
@@ -192,10 +205,12 @@ export default {
           if (!isSpectator) {
             // 展示聊天页面
             this.showChatting = true;
+            // this.scrollHistoryToBottom();
           } else if (claimedSeat !== -1) {
             // players需要入座后才能打开
             // 展示聊天页面
             this.showChatting = true;
+            // this.scrollHistoryToBottom();
           } else {
             // 警告玩家未入座
             this.$notification["error"]({
@@ -232,6 +247,7 @@ export default {
     // 处理选择聊天对象
     handleChoosePlayer(player) {
       this.chatName = player.name;
+      this.message = "";
     },
 
     // input时阻止冒泡
@@ -242,28 +258,30 @@ export default {
     // 发送按钮
     sendMessage() {
       event.preventDefault();
-      const { inputValue, chatName, chatPlayerList } = this;
+      const { message, chatName, extra } = this;
       if (!chatName) return;
       // 输入非空判断
-      if (!inputValue) {
+      if (!message) {
         this.notice("发送失败！", "输入不能为空！");
         return;
       }
-      // 寻找
-      const player = chatPlayerList.find((item) => {
-        return item.name == chatName;
-      });
-      if (!player.chatId) {
+      // 发送对象Id非空
+      if (!extra) {
         this.notice("发送失败！", "玩家未入座，请等待玩家入座后再试。");
         return;
       }
-
-      // 整理
-      const message = inputValue;
-      const extra = player.chatId;
       console.log(message, extra);
       // 发送
       this.$store.dispatch("chat/handleSendMessage", { extra, message });
+      this.message = "";
+    },
+
+    // 聊天记录自动滚动到底部
+    scrollHistoryToBottom() {
+      this.$nextTick(() => {
+        this.$refs.scrollContainer.scrollTop =
+          this.$refs.scrollContainer.scrollHeight;
+      });
     },
   },
 };
@@ -338,9 +356,16 @@ export default {
         width: 500px;
         height: 350px;
         background-color: #f3f3f3;
-        .chat-history-container {
+        overflow-y: scroll;
+        .notice-card {
+          width: 100%;
+          color: #5d747c;
           font-size: 18px;
-          font-weight: 100;
+          text-align: center;
+          margin-top: 50%;
+        }
+        .chat-history-container {
+          font-size: 16px;
           color: black;
           margin: 0 15px 20px 15px;
           .history-user {

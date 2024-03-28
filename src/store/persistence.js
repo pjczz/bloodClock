@@ -72,6 +72,9 @@ module.exports = (store) => {
     store.commit("session/setSessionId", sessionId);
   }
   /**** Chat related data ****/
+  if (localStorage.getItem("userId")) {
+    store.commit("chat/setUserId", localStorage.getItem("userId"));
+  }
   if (localStorage.getItem("stId")) {
     store.commit("chat/setStId", localStorage.getItem("stId"));
   }
@@ -197,6 +200,13 @@ module.exports = (store) => {
         }
         break;
 
+      case "chat/setUserId":
+        if (payload) {
+          localStorage.setItem("userId", payload);
+        } else {
+          localStorage.removeItem("userId");
+        }
+        break;
       case "chat/setStId":
         if (payload) {
           localStorage.setItem("stId", payload);
